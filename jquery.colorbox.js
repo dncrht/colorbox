@@ -1014,8 +1014,55 @@
 					if ($related[1] && (settings.get('loop') || $related[index + 1])) {
 						photo.style.cursor = 'pointer';
 
-						$(photo).bind('click.'+prefix, function () {
-							publicMethod.next();
+						var nextOrPrevPhoto = function(x, y) {
+							var from = $(this).data('from');
+							var to = {x: x, y: y};
+							var distance = Math.sqrt(Math.pow(to.x - from.x, 2) + Math.pow(to.y - from.y, 2));
+
+							if (distance < 4) {
+								publicMethod.next();
+							} else {
+								if ((to.x - from.x) > 0) {
+									publicMethod.prev();
+								} else {
+									publicMethod.next();
+								}
+							}
+						};
+
+						var rememberOldPosition = function(x, y) {
+							$(this).data('from', {x: x, y: y});
+						};
+
+						$(photo).bind({
+							touchstart: function(e) {
+								rememberOldPosition(
+									e.originalEvent.changedTouches[0].pageX,
+									e.originalEvent.changedTouches[0].pageY
+								);
+
+								return false;
+							},
+							mousedown: function(e) {
+								rememberOldPosition(
+									e.pageX,
+									e.pageY
+								);
+
+								return false;
+							},
+							touchend: function(e) {
+								nextOrPrevPhoto(
+									e.originalEvent.changedTouches[0].pageX,
+									e.originalEvent.changedTouches[0].pageY
+								);
+							},
+							mouseup: function(e) {
+								nextOrPrevPhoto(
+									e.pageX,
+									e.pageY
+								);
+							}
 						});
 					}
 
